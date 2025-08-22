@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
+import type { View } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useSelector, useDispatch } from "react-redux";
@@ -26,7 +27,9 @@ export default function App() {
     (state: RootState) => state.calendar
   );
 
-  // Build chart data
+  const [date, setDate] = useState(new Date());
+  const [view, setView] = useState<View>("month");
+
   const chartData = useMemo(() => {
     if (!selectedDate || !data[selectedDate]) return [];
     return data[selectedDate].map((obj) => {
@@ -35,7 +38,6 @@ export default function App() {
     });
   }, [selectedDate, data]);
 
-  // Calendar events
   const events = useMemo(() => {
     return Object.keys(data).map((key) => {
       const m = moment(key, "DD-MM-YYYY");
@@ -55,7 +57,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", padding: 20 }}>
-      <h2> React Big Calendar with Redux + Bar Graph</h2>
+      <h2>React Big Calendar with Redux + Bar Graph</h2>
 
       <Calendar
         localizer={localizer}
@@ -65,8 +67,24 @@ export default function App() {
         startAccessor="start"
         endAccessor="end"
         style={{ height: 600 }}
+        date={date}
+        onNavigate={(newDate) => setDate(newDate)}
+        view={view}
+        onView={(newView) => setView(newView)}
         onSelectSlot={(slotInfo) => handleSelectDate(slotInfo.start)}
         onSelectEvent={(event) => handleSelectDate(event.start)}
+        dayPropGetter={(dateObj) => {
+          const formatted = fmt(dateObj);
+          if (formatted === selectedDate) {
+            return {
+              style: {
+                backgroundColor: "#1976d2",
+                color: "white",
+              },
+            };
+          }
+          return {};
+        }}
       />
 
       <Modal
