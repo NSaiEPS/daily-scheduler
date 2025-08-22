@@ -4,6 +4,7 @@ import type { View } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useSelector, useDispatch } from "react-redux";
+import "./calendar.css";
 
 import Modal from "./components/Modal";
 import {
@@ -80,6 +81,8 @@ export default function App() {
               style: {
                 backgroundColor: "#1976d2",
                 color: "white",
+                fontWeight: "bold",
+                textAlign: "center",
               },
             };
           }
