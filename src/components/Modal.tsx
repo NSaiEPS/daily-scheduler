@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 import ReactDOM from "react-dom";
 
 interface ModalProps {
@@ -24,7 +24,6 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
         justifyContent: "center",
         zIndex: 9999,
       }}
-      onClick={onClose}
     >
       <div
         style={{

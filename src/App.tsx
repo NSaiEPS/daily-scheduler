@@ -5,6 +5,15 @@ import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
 import Modal from "./components/Modal";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
 
 // Define event shape for the calendar
 interface CalendarEvent {
@@ -18,10 +27,25 @@ const localizer = momentLocalizer(moment);
 
 const fmt = (d: Date): string => moment(d).format("DD-MM-YYYY");
 
+// Chart data row type
+interface ChartRow {
+  name: string;
+  value: number;
+}
+
 const dummyData: DummyData = {
   "01-09-2025": [{ user_1: 1 }, { user_2: 2 }, { user_3: 3 }, { user_4: 4 }],
   "02-09-2025": [{ user_1: 3 }, { user_2: 6 }, { user_3: 2 }, { user_4: 5 }],
   "03-09-2025": [{ user_1: 5 }, { user_2: 2 }, { user_3: 7 }, { user_4: 1 }],
+};
+
+// Build chart data from dummyData shape
+const buildChartData = (dateKey: string): ChartRow[] => {
+  const rows = dummyData[dateKey] || [];
+  return rows.map((obj) => {
+    const name = Object.keys(obj)[0];
+    return { name, value: obj[name] as number };
+  });
 };
 
 // Dummy data type
@@ -119,6 +143,11 @@ export default function App() {
     };
   }, []);
 
+  const chartData: ChartRow[] = useMemo(
+    () => (modalDateKey ? buildChartData(modalDateKey) : []),
+    [modalDateKey]
+  );
+
   return (
     <div style={{ minHeight: "100vh", padding: 20 }}>
       <h2 style={{ marginBottom: 12 }}>📅 React Big Calendar with Bar Graph</h2>
@@ -152,7 +181,17 @@ export default function App() {
         title={`📊 Data for ${modalDateKey || ""}`}
         onClose={() => setModalOpen(false)}
       >
-        <div style={{ width: "100%", height: 360 }}>Chart Data</div>
+        <div style={{ width: "100%", height: 360 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Bar dataKey="value" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </Modal>
     </div>
   );
