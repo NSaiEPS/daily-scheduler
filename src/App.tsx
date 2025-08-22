@@ -1,35 +1,84 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import { Calendar, momentLocalizer } from "react-big-calendar";
+import moment from "moment";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+
+const localizer = momentLocalizer(moment);
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [chartData, setChartData] = useState(null);
+  const dummyData = {
+    "01-09-2025": [{ user_1: 1 }, { user_2: 2 }, { user_3: 3 }, { user_4: 4 }],
+    "02-09-2025": [{ user_1: 3 }, { user_2: 6 }, { user_3: 2 }, { user_4: 5 }],
+    "03-09-2025": [{ user_1: 5 }, { user_2: 2 }, { user_3: 7 }, { user_4: 1 }],
+  };
+  // Convert dummyData keys into events for the calendar
+  const events = Object.keys(dummyData).map((date) => {
+    const [day, month, year] = date.split("-");
+    return {
+      title: `Data Available`,
+      start: new Date(`${year}-${month}-${day}`),
+      end: new Date(`${year}-${month}-${day}`),
+      allDay: true,
+    };
+  });
+
+  const handleSelectSlot = (slotInfo) => {
+    const clickedDate = moment(slotInfo.start).format("DD-MM-YYYY");
+
+    if (dummyData[clickedDate]) {
+      const formattedData = dummyData[clickedDate].map((item) => {
+        const key = Object.keys(item)[0];
+        return { name: key, value: item[key] };
+      });
+      setChartData(formattedData);
+      setSelectedDate(clickedDate);
+    } else {
+      alert("No data found for the selected date.");
+      setChartData(null);
+      setSelectedDate(null);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div style={{ height: "100vh", padding: "20px" }}>
+      <h2> React Big Calendar with Bar Graph</h2>
+
+      <Calendar
+        localizer={localizer}
+        events={events}
+        selectable
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: 500 }}
+        onSelectSlot={handleSelectSlot}
+        views={["month", "week", "day"]}
+      />
+
+      {chartData && (
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "20px",
+            border: "1px solid #ddd",
+            borderRadius: "10px",
+          }}
+        >
+          <h3> Data for {selectedDate}</h3>
+          <BarChart width={600} height={300} data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="value" fill="#8884d8" />
+          </BarChart>
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
